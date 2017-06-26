@@ -1,0 +1,28 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="about-view">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+    </style>
+
+    <div class="card">
+      <h1>About - Maze Code Challenge</h1>
+      <p>Author: Bruce Green
+      <p>&copy; 2017 bwgz.org</p>
+    </div>
+  </template>
+
+  <script>
+    class AboutView extends Polymer.Element {
+      static get is() { return 'about-view'; }
+    }
+
+    window.customElements.define(AboutView.is, AboutView);
+  </script>
+</dom-module>

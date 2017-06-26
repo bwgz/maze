@@ -1,0 +1,227 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-styles/color.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="home-view">
+    <template>
+        <style include="shared-styles">
+            :host {
+              display: block;
+              padding: 10px;
+            }
+        </style>
+		<style is="custom-style">
+			#container {
+			  display: flex;
+			}
+			paper-button {
+			  font-family: 'Roboto', 'Noto', sans-serif;
+			  font-weight: normal;
+			  font-size: 12px;
+			  -webkit-font-smoothing: antialiased;
+			}
+			paper-button.green {
+			  background-color: var(--paper-green-500);
+			  color: white;
+			}
+			paper-button.green[active] {
+			  background-color: var(--paper-red-500);
+			}
+		  :root {
+		    --iron-autogrow-textarea: {
+		      font-family: monospace !important;
+		    };
+		  }
+		</style>
+	    <iron-ajax
+	        id="requestRepos"
+	        url="http://localhost:8080/api/v1/maze"
+	        content-type="application/json"
+			method="post"
+	        handle-as="json"
+	        body="{{requestBody}}"
+	        on-response="onResponse"
+	        on-error="onError">
+	    </iron-ajax>
+	
+	    <div class="card">
+			<canvas id="canvas" width="0" height="0">Your browser does not support canvas.</canvas>
+			<p>{{message}}</p>
+	
+	        <h1>Instructions</h1>
+	          <p>Click on the  <paper-button class="green" on-click="openSubmitDialog" >Submit Maze</paper-button> button to enter your maze.</p>
+	          <p>A valid maze may contain the following types of characters:</p>
+	          <ul>
+	             <li>`.` represents an open road</li>
+	             <li>`#` represents a blocked road</li>
+	             <li>`A` represents the starting point</li>
+	             <li>`B` represents the destination point</li>
+	          </ul>
+	          <p>Here's an example of a maze.</p>
+	          <p>
+<pre>##########
+#A...#...#
+#.#.##.#.#
+#.#.##.#.#
+#.#....#B#
+#.#.##.#.#
+#....#...#
+##########</pre>
+	          </p>
+	    </div>
+        <paper-dialog id="submitDialog">
+            <h2>Submit Maze</h2>
+            
+            <paper-dialog-scrollable>
+                <paper-textarea id="input" class="fixed" style="width: 400px; height: 300px;"
+                    label="Submit Maze"
+					prevent-invalid-input
+					auto-validate
+					required
+                    allowed-pattern="[#.AB]"
+					pattern="[#.AB]"
+					error-message="Please use the following characters - #.AB">
+				</paper-textarea>
+            </paper-dialog-scrollable>
+            <div class="buttons">
+                 <paper-button dialog-dismiss>Cancel</paper-button>
+                 <paper-button on-tap="onSubmitDialog">Submit</paper-button>
+            </div>
+        </paper-dialog>
+        
+        <paper-dialog id="errorDialog">
+            <p>Maze Submission Failed</p>
+            
+            <div class="buttons">
+                 <paper-button dialog-dismiss>Cancel</paper-button>
+                 <paper-button on-click="onSubmitDialog" dialog-confirm autofocus>Try Again</paper-button>
+            </div>
+        </paper-dialog>
+    </template>
+
+  <script>
+  Polymer({
+      is: 'home-view',
+	  	width: {
+	        type: Number,
+	    },
+		height: {
+	        type: Number,
+	    },
+		start: {
+	        type: Object,
+	    },
+		finish: {
+	        type: Object,
+	    },
+		paths: {
+	        type: Object,
+	    },
+		route: {
+	        type: Object,
+		},
+		message: {
+	        type: String,
+	    },
+      requestBody: {
+      	type: Object,
+      	value:{ maze: null /* [ "#####", "#A..#", "#.#.#", "#.#B#", "#...#", "#####" ] */ }
+      },
+      ready: function () {
+    	  this.message = "";
+      },
+      openSubmitDialog: function(){
+          this.$.submitDialog.open();
+        },
+      onSubmitDialog: function(){
+          if (this.$.input.validate()) {
+              this.$.submitDialog.close();
+	    	  if (this.$.input.value != undefined) {
+		          this.requestBody.maze = this.$.input.value.split('\n');
+		          this.$.requestRepos.generateRequest();
+	    	  }
+          }
+	  },
+	  onError: function(e) {
+		this.message = "";
+		var canvas = this.$.canvas;
+		
+		canvas.width = 0;
+		canvas.height = 0;
+		
+        this.$.errorDialog.open();
+      },
+      onResponse: function (e) {
+          var response = e.detail.response;
+          this.width = response.width;
+          this.height = response.height;
+          this.start = response.start;
+          this.finish = response.finish;
+          this.paths = response.paths;
+          this.route = response.route;
+         
+          if (this.route.length == 0) {
+          	this.message = "No path was found in this matrix.";
+          }
+          else {
+          	this.message = "The shortest path from start (green) to finish (red) has " + (this.route.length - 1) + " steps.";
+          }
+  	    
+  	      var THICKNESS = 4;
+  	      var context;
+  		  var scale = Math.min(Math.max(Math.floor(800 / (THICKNESS * this.width)), 1), 10);
+          var canvas = this.$.canvas;
+          
+          canvas.width = scale * THICKNESS * this.width;
+          canvas.height = scale * THICKNESS * this.height;
+          if (canvas.getContext) {
+              context = canvas.getContext("2d");
+              context.scale(scale, scale);
+
+              context.fillStyle = "grey";
+              context.fillRect(0, 0, canvas.width, canvas.height);
+              
+              for (i = 0; i < this.paths.length; i++) {
+            	  var path = this.paths[i];
+                  context.fillStyle = "white";
+                  context.fillRect(THICKNESS * path.x, THICKNESS * path.y, THICKNESS, THICKNESS);
+              }
+             
+              if (this.route.length != 0) {
+	            	var source = this.route[0];
+	        		context.beginPath();
+	                context.strokeStyle = "blue";
+	                context.lineJoin="round";
+	                context.moveTo(THICKNESS * source.x + THICKNESS / 2 , THICKNESS * source.y + THICKNESS / 2);
+	                
+	        		for (i = 1; i < this.route.length; i++) {
+	                	var destination = this.route[i];
+	                    context.lineTo(THICKNESS * destination.x + THICKNESS / 2, THICKNESS * destination.y + THICKNESS / 2);
+	                    context.stroke();
+	                }
+	        	}
+          
+				if (this.start != null) {
+	        		context.beginPath();
+	                context.arc(THICKNESS * this.start.x + THICKNESS / 2 , THICKNESS * this.start.y + THICKNESS / 2, THICKNESS / 3, 0, 2 * Math.PI);
+	                context.fillStyle = "green";
+	                context.fill();
+				}
+				
+				if (this.finish != null) {
+	        		context.beginPath();
+	                context.arc(THICKNESS * this.finish.x + THICKNESS / 2 , THICKNESS * this.finish.y + THICKNESS / 2, THICKNESS / 3, 0, 2 * Math.PI);
+	                context.fillStyle = "red";
+	                context.fill();
+          	    }
+          }
+      }
+    });
+  </script>
+</dom-module>

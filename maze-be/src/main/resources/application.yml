@@ -1,0 +1,22 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: maze-be
+
+info:
+  app:
+    name: maze-be
+    description: This application provides a web service that calculates the shortest path within a maze.
+    version: 1.0.0
+
+endpoints:
+  health:
+    sensitive: false
+  restart:
+    enabled: true
+  shutdown:
+    enabled: true
+    
+logging.level.org.bwgz: DEBUG
