@@ -1,0 +1,128 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<dom-module id="maze-canvas">
+    <template>
+        <style>
+	      .canvas {
+	        width: var(--maze-canvas-width);
+	      }
+        </style>
+        
+        <canvas id="canvas" class="canvas">Your browser does not support canvas.</canvas>
+    </template>
+
+  <script>
+  class MazeCanvas extends Polymer.Element {
+	  static get is() { return 'maze-canvas'; }
+	  static get properties() {
+	    return {
+            debug: {
+                type: Boolean,
+            },
+            hint: {
+            	type: Number,
+            	value: 250
+            },
+	    	maze: {
+	    		type: Object,
+	    		value: null,
+	    	    observer: 'mazeChanged'
+	    	},
+	    };
+	  }
+	  
+	  mazeChanged(newValue, oldValue) {
+          this.render(newValue);
+	  }
+	  
+	  calculatePostion(x, y, scale) {
+		  return {
+			  x: x * scale,
+			  y: y * scale
+		  }
+	  }
+	  
+	  render(maze) {
+          var canvas = this.$.canvas;
+          
+          if (this.debug) {
+              console.log("----- canvas (in) ----")
+              console.log(" width: " + canvas.width);
+              console.log("height: " + canvas.height);
+        	  console.log("----- maze -----")
+        	  console.log(" width: " + maze.width);
+              console.log("height: " + maze.height);
+          }
+          
+          if (maze == null) {
+        	  canvas.width = 0;
+        	  canvas.height = 0;
+          }
+          else {
+	            var THICKNESS = 4;
+	            
+	            if ((THICKNESS * maze.width) < this.hint) {
+	            	THICKNESS = Math.ceil(this.hint / maze.width);
+	            }
+	            else {
+	            	THICKNESS = 4;
+	            }
+	            
+	            THICKNESS = Math.max(THICKNESS, 4);
+	            
+	            canvas.width = THICKNESS * maze.width;
+	            canvas.height = THICKNESS * maze.height;
+	            if (canvas.getContext) {
+	                var context = canvas.getContext("2d");
+	
+	                context.fillStyle = "grey";
+	                context.fillRect(0, 0, canvas.width, canvas.height);
+	                
+	                maze.paths.forEach(function(path) {
+	                    context.fillStyle = "white";
+	                    context.fillRect(THICKNESS * path.x, THICKNESS * path.y, THICKNESS, THICKNESS);
+	                });
+	               
+	                var offset = THICKNESS / 2;
+	                if (maze.route.length != 0) {
+	                    var source = maze.route[0];
+	                    context.beginPath();
+	                    context.strokeStyle = "blue";
+	                    context.lineJoin="round";
+	                    context.lineWidth = THICKNESS / 3
+	                    context.moveTo(THICKNESS * source.x + offset , THICKNESS * source.y + offset);
+	                    
+	                    for (var i = 1; i < maze.route.length; i++) {
+	                        var destination = maze.route[i];
+	                        context.lineTo(THICKNESS * destination.x + offset, THICKNESS * destination.y + offset);
+	                        context.stroke();
+	                    }
+	                }
+	                
+                    if (maze.start != null) {
+                        context.beginPath();
+                        context.arc(THICKNESS * maze.start.x + offset , THICKNESS * maze.start.y + offset, THICKNESS / 3, 0, 2 * Math.PI);
+                        context.fillStyle = "green";
+                        context.fill();
+                    }
+                    
+                    if (maze.finish != null) {
+                        context.beginPath();
+                        context.arc(THICKNESS * maze.finish.x + offset , THICKNESS * maze.finish.y + offset, THICKNESS / 3, 0, 2 * Math.PI);
+                        context.fillStyle = "red";
+                        context.fill();
+                    }
+
+	            }
+          }
+          
+          console.log("----- canvas properties (out)-------")
+          console.log(" width: " + canvas.width);
+          console.log("height: " + canvas.height);
+
+	  }
+  }
+
+  window.customElements.define(MazeCanvas.is, MazeCanvas);
+  </script>
+</dom-module>
