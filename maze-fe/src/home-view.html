@@ -8,6 +8,7 @@
 <link rel="import" href="../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../bower_components/paper-styles/color.html">
 <link rel="import" href="maze-canvas.html">
+<link rel="import" href="maze-svg.html">
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="home-view">
@@ -61,14 +62,17 @@
             </style>
 	        <div class="card">
 	           <div class="canvas-container" >
+	             <p>Canvas</p>
 	             <maze-canvas maze="[[maze]]" debug></maze-canvas>
+	             <p>SVG</p>
+                 <maze-svg maze="[[maze]]" debug></maze-svg>
                  <template is="dom-if" if="[[steps]]">
                     <p>The shortest path from start (green) to finish (red) has {{steps}} steps.</p>
 		         </template>
-                 <template is="dom-if" if="[[!steps]]">
-                    <p>No path was found in this maze.</p>
-                 </template>
 	           </div>
+               <template is="dom-if" if="[[!steps]]">
+                  <p>No path was found in this maze.</p>
+               </template>
 	        </div>
         </template>
         

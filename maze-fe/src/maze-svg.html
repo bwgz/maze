@@ -1,0 +1,127 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<dom-module id="maze-svg">
+    <template>
+        <style>
+	      .svg {
+	        width: var(--maze-svg-width);
+	      }
+        </style>
+        
+        <div id="svg"></div>
+    </template>
+
+  <script>
+  class Element {
+	constructor(name, attributes) {
+		this.name = name
+	    this.attributes = attributes;
+        
+        this.children = new Set();
+	}
+	
+	add(child) {
+		this.children.add(child);
+	}
+	
+	toString() {
+		var html = `<${this.name} ${this.attributes}>`;
+		for (let child of this.children) {
+			console.log(`child: ${child}`);
+			html += child.toString();
+		}
+		html += `</${this.name}>`;
+		return html;
+	}
+  }
+  
+  class MazeSVG extends Polymer.Element {
+	  static get is() { return 'maze-svg'; }
+	  static get properties() {
+	    return {
+            debug: {
+                type: Boolean,
+            },
+            hint: {
+            	type: Number,
+            	value: 250
+            },
+	    	maze: {
+	    		type: Object,
+	    		value: null,
+	    	    observer: 'mazeChanged'
+	    	},
+	    	fill: {
+	    		type: String,
+	    		value: ""
+	    	}
+	    };
+	  }
+	  
+	  mazeChanged(newValue, oldValue) {
+          this.render(newValue);
+	  }
+	  
+	  calculatePostion(x, y, scale) {
+		  return {
+			  x: x * scale,
+			  y: y * scale
+		  }
+	  }
+	  
+	  render(maze) {
+          if (this.debug) {
+        	  console.log("----- maze -----")
+        	  console.log(" width: " + maze.width);
+              console.log("height: " + maze.height);
+          }
+          
+          var scale = 1;
+          
+          if (maze.width < this.hint) {
+        	  scale = Math.ceil(this.hint / maze.width);
+          }
+          
+          var width = maze.width * scale;
+          var height = maze.height * scale;
+          var svg = new Element('svg', `width="${width}" height="${height}"`);
+          if (maze != null) {
+				var g = new Element('g', `transform="scale(${scale})"`)
+                var rectangle = new Element('rect', `width="${maze.width}" height="${maze.height}" style="fill:grey; stroke-width:0"`);
+				g.add(rectangle);
+				
+				for (let location of this.maze.paths) {
+	                rectangle = new Element('rect', `x="${location.x}" y="${location.y}" width="1" height="1" style="fill:white"`);
+	                g.add(rectangle);
+				}
+				
+				var points = "";
+				
+		        for (let location of maze.route) {
+		        	points += `${location.x + 0.5} ${location.y + 0.5} `
+		        }
+		        
+                var polyline = new Element('polyline', `points="${points}" stroke="blue" stroke-width="0.5" stroke-linecap="square" fill="none" stroke-linejoin="round"`);
+                g.add(polyline);
+				
+                if (maze.start != null) {
+                    var circle = new Element('circle', `cx="${maze.start.x + 0.5}" cy="${maze.start.y + 0.5}" r="0.4" fill="green"`);
+                    g.add(circle);
+                }
+                
+                if (maze.finish != null) {
+                    var circle = new Element('circle', `cx="${maze.finish.x + 0.5}" cy="${maze.finish.y + 0.5}" r="0.4" fill="red"`);
+                    g.add(circle);
+                }
+
+                svg.add(g);
+          }
+          
+          this.$.svg.innerHTML = svg.toString();
+	  }
+	  
+  }
+
+  window.customElements.define(MazeSVG.is, MazeSVG);
+  </script>
+</dom-module>
