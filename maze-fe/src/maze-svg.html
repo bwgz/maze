@@ -2,12 +2,6 @@
 
 <dom-module id="maze-svg">
     <template>
-        <style>
-	      .svg {
-	        width: var(--maze-svg-width);
-	      }
-        </style>
-        
         <div id="svg"></div>
     </template>
 
@@ -16,7 +10,6 @@
 	constructor(name, attributes) {
 		this.name = name
 	    this.attributes = attributes;
-        
         this.children = new Set();
 	}
 	
@@ -27,7 +20,6 @@
 	toString() {
 		var html = `<${this.name} ${this.attributes}>`;
 		for (let child of this.children) {
-			console.log(`child: ${child}`);
 			html += child.toString();
 		}
 		html += `</${this.name}>`;
@@ -42,44 +34,33 @@
             debug: {
                 type: Boolean,
             },
-            hint: {
-            	type: Number,
-            	value: 250
-            },
 	    	maze: {
 	    		type: Object,
 	    		value: null,
 	    	    observer: 'mazeChanged'
 	    	},
-	    	fill: {
-	    		type: String,
-	    		value: ""
+	    	scale: {
+	    		type: Number,
+	    		value: 1,
+                observer: 'scaleChanged'
 	    	}
 	    };
 	  }
 	  
 	  mazeChanged(newValue, oldValue) {
-          this.render(newValue);
+          this.render(newValue, this.scale);
 	  }
+
+      scaleChanged(newValue, oldValue) {
+          this.render(this.maze, newValue);
+      }
 	  
-	  calculatePostion(x, y, scale) {
-		  return {
-			  x: x * scale,
-			  y: y * scale
-		  }
-	  }
-	  
-	  render(maze) {
+	  render(maze, scale) {
           if (this.debug) {
         	  console.log("----- maze -----")
         	  console.log(" width: " + maze.width);
               console.log("height: " + maze.height);
-          }
-          
-          var scale = 1;
-          
-          if (maze.width < this.hint) {
-        	  scale = Math.ceil(this.hint / maze.width);
+              console.log(" scale: " + scale);
           }
           
           var width = maze.width * scale;
@@ -90,7 +71,7 @@
                 var rectangle = new Element('rect', `width="${maze.width}" height="${maze.height}" style="fill:grey; stroke-width:0"`);
 				g.add(rectangle);
 				
-				for (let location of this.maze.paths) {
+				for (let location of maze.paths) {
 	                rectangle = new Element('rect', `x="${location.x}" y="${location.y}" width="1" height="1" style="fill:white"`);
 	                g.add(rectangle);
 				}

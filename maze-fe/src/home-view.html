@@ -9,6 +9,7 @@
 <link rel="import" href="../bower_components/paper-styles/color.html">
 <link rel="import" href="maze-canvas.html">
 <link rel="import" href="maze-svg.html">
+<link rel="import" href="maze-viewer-svg.html">
 <link rel="import" href="shared-styles.html">
 
 <dom-module id="home-view">
@@ -60,12 +61,31 @@
                     overflow: auto;
                 }
             </style>
+            <div class="card">
+               <div class="canvas-container" >
+                 <h3>SVG</h3>
+                 <maze-viewer-svg maze="[[maze]]" scale="[[scale]]" debug></maze-viewer-svg>
+                 <template is="dom-if" if="[[steps]]">
+                    <p>The shortest path from start (green) to finish (red) has {{steps}} steps.</p>
+                 </template>
+               </div>
+               <template is="dom-if" if="[[!steps]]">
+                  <p>No path was found in this maze.</p>
+               </template>
+            </div>
+        </template>
+
+        <template is="dom-if" if="[[maze]]">
+            <style>
+                .canvas-container {
+                    width: 100%;
+                    overflow: auto;
+                }
+            </style>
 	        <div class="card">
 	           <div class="canvas-container" >
-	             <p>Canvas</p>
+	             <h3>CANVAS</h3>
 	             <maze-canvas maze="[[maze]]" debug></maze-canvas>
-	             <p>SVG</p>
-                 <maze-svg maze="[[maze]]" debug></maze-svg>
                  <template is="dom-if" if="[[steps]]">
                     <p>The shortest path from start (green) to finish (red) has {{steps}} steps.</p>
 		         </template>
@@ -142,9 +162,13 @@
               type: Object,
               value: null
            },
-          steps: {
+          scale: {
         	  type: Number,
-        	  value: null
+        	  value: 4
+          },
+          steps: {
+              type: Number,
+              value: null
           },
 	      requestBody: {
 	          type: Object,

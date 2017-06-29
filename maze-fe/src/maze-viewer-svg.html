@@ -1,0 +1,84 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="maze-svg.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="maze-viewer-svg">
+    <template>
+        <style is="custom-style">
+            .svg {
+              width: var(--maze-viewer-svg-width);
+            }
+            paper-button {
+              font-family: 'Roboto', 'Noto', sans-serif;
+              font-weight: normal;
+              font-size: 12px;
+              -webkit-font-smoothing: antialiased;
+            }
+            paper-button.grey {
+              background-color: var(--paper-grey-500);
+              color: white;
+            }
+            .maze-container {
+                width: 100%;
+                overflow: auto;
+            }
+            .container {
+                padding: 5px;
+            }
+        </style>
+        
+        <div>
+	        <div class="container">
+	             <paper-button id="up" class="grey" on-tap="onZoom">+</paper-button>
+	             <paper-button id="down" class="grey" on-tap="onZoom">-</paper-button>
+	        </div>
+	        <div class="maze-container" >
+	            <maze-svg maze="[[maze]]" scale="[[scale]]" debug></maze-svg>
+	        </div>
+	    </div>
+    </template>
+
+  <script>
+  class MazeViewerSVG extends Polymer.Element {
+	  static get is() { return 'maze-viewer-svg'; }
+	  static get properties() {
+	    return {
+            debug: {
+                type: Boolean,
+            },
+            hint: {
+                type: Number,
+                value: 200
+            },
+	    	maze: {
+	    		type: Object,
+	    		value: null,
+                observer: 'mazeChanged'
+	    	},
+	    	scale: {
+	    		type: Number,
+	    		value: 1
+	    	}
+	    };
+	  }
+	  
+     mazeChanged(newValue, oldValue) {
+    	 if (newValue.width < this.hint) {
+    		 this.scale = Math.ceil(this.hint / newValue.width);
+    	 }
+     }
+     
+     onZoom(e) {
+          if (e.target.id == "up") {
+        	  this.scale++;
+          }
+          else if (this.scale != 1) {
+        	  this.scale--;
+          }
+      }
+  }
+
+  window.customElements.define(MazeViewerSVG.is, MazeViewerSVG);
+  </script>
+</dom-module>
