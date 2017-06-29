@@ -45,7 +45,7 @@
 		</style>
 	    <iron-ajax
 	        id="api"
-	        url="http://localhost:8080/api/v1/maze"
+	        url="[[url]]"
 	        content-type="application/json"
 			method="post"
 	        handle-as="json"
@@ -75,6 +75,7 @@
             </div>
         </template>
 
+<!--  
         <template is="dom-if" if="[[maze]]">
             <style>
                 .canvas-container {
@@ -95,7 +96,7 @@
                </template>
 	        </div>
         </template>
-        
+-->        
 	    <div class="card">
 	        <h1>Instructions</h1>
 	          <p>Click on the  <paper-button class="green" on-click="openSubmitDialog" >Submit Maze</paper-button> button to enter your maze.</p>
@@ -173,11 +174,17 @@
 	      requestBody: {
 	          type: Object,
 	          value: { maze: null /* [ "#####", "#A..#", "#.#.#", "#.#B#", "#...#", "#####" ] */ }
-	        },
+	      },
+	      url: {
+	    	  type: String,
+	    	  value: `http://${window.location.hostname}:8080/api/v1/maze`,
+	    	  readOnly: true
+	      }
 	    };
 	  }
 	  
 	  openSubmitDialog() {
+		  console.log(`hostname: ${window.location.hostname}`);
 	      this.$.submitDialog.open();
 	  }
 	
