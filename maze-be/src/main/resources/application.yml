@@ -1,6 +1,3 @@
-server:
-  port: 8080
-
 spring:
   application:
     name: maze-be
@@ -20,3 +17,16 @@ endpoints:
     enabled: true
     
 logging.level.org.bwgz: DEBUG
+
+---
+spring:
+    profiles: production
+
+server:
+  port: 8443
+  ssl:
+    key-store: classpath:keystore.p12
+    key-store-password: mypassword
+    keyStoreType: PKCS12
+    keyAlias: tomcat
+

@@ -1,0 +1,5 @@
+aws ecr get-login --no-include-email --region us-west-2
+
+docker tag bgreen/maze-be:latest 037199803393.dkr.ecr.us-west-2.amazonaws.com/maze-be:latest
+
+docker push 037199803393.dkr.ecr.us-west-2.amazonaws.com/maze-be:latest

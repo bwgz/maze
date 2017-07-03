@@ -1,0 +1,4 @@
+firebase init
+firebase login
+polymer build
+firebase deploy

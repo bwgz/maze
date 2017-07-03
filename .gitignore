@@ -5,6 +5,7 @@
 .mvn
 .project
 .settings
+.firebaserc
 
 RemoteSystemsTempFiles
 bin
